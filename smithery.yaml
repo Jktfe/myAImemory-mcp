@@ -1,0 +1,18 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+    additionalProperties: false
+  commandFunction: |
+    function getCommand(config) {
+      return {
+        command: "node",
+        args: ["dist/direct-index.js"],
+        env: {}
+      };
+    }
+
+build:
+  dockerfile: Dockerfile
+  dockerBuildPath: .

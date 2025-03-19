@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "myAI Memory": {
+      "preferences": {}
+    },
+    "User Information": {
+      "preferences": {
+        "Name": "Default User",
+        "Location": "Default Location"
+      }
+    },
+    "General Response Style": {
+      "preferences": {
+        "Style": "Concise and friendly"
+      }
+    }
+  }
+}

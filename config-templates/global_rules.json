@@ -1,0 +1,9 @@
+{
+  "mcpServers": [
+    {
+      "name": "myai-memory-sync",
+      "command": "node PATH_TO_PROJECT/dist/index.js",
+      "transport": "stdio"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "name": "dave",
+  "sections": [
+    {
+      "title": "User Information",
+      "description": "Use this information if you need to reference them directly",
+      "items": [
+        {
+          "key": "Name",
+          "value": "Dave"
+        },
+        {
+          "key": "Age",
+          "value": "30"
+        },
+        {
+          "key": "Location",
+          "value": "Birmingham"
+        },
+        {
+          "key": "Likes",
+          "value": "Football, Drums, Golf"
+        }
+      ]
+    },
+    {
+      "title": "General Response Style",
+      "description": "Use this in every response",
+      "items": [
+        {
+          "key": "Use UK English Spellings",
+          "value": "true"
+        },
+        {
+          "key": "Use £ (GBP) as the default currency",
+          "value": "if you need to use conversions put them in brackets i.e. £1.10 ($1.80)"
+        },
+        {
+          "key": "You can be very concise",
+          "value": "true"
+        },
+        {
+          "key": "Always double check references and provide links to sources",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "title": "Coding Preferences",
+      "description": "General Preferences when responding to coding questions",
+      "items": [
+        {
+          "key": "Provide visuals to support logic explanations",
+          "value": "true"
+        },
+        {
+          "key": "Maintain and update a \"Project Variables\" document",
+          "value": "so that it is easy to track what variables are being used in the projects"
+        }
+      ]
+    }
+  ]
+}
