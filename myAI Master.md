@@ -27,7 +27,3 @@
 ## File Access Instructions
 -~- If a file is in .gitignore and you need to read it, ask for permission to use the filesystem MCP
 -~- For API credentials or accessing services, use the serveMyAPI MCP by @Jktfe
-
-# General Response Style
-## Information about General Response Style
-

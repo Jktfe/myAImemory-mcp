@@ -62,9 +62,9 @@ export function getCacheConfig(): CacheConfig {
 /**
  * Generate a cache key from prompt
  */
-export function generateCacheKey(messages: any[], model: string): string {
-  // Create a string representation of messages and model
-  const dataString = JSON.stringify({ messages, model });
+export function generateCacheKey(messages: any[], model: string, system?: string): string {
+  // Create a string representation of messages, model, and system prompt
+  const dataString = JSON.stringify({ messages, model, system });
   
   // Simple hash function
   let hash = 0;
@@ -164,14 +164,16 @@ export async function sendMessageWithCache(
     model?: string;
     cacheConfig?: Partial<CacheConfig>;
     anthropicOptions?: any;
+    system?: string;
   } = {}
 ): Promise<any> {
   const model = options.model || 'claude-3-haiku-20240307';
   const cacheConfig = options.cacheConfig || {};
   const anthropicOptions = options.anthropicOptions || {};
+  const systemPrompt = options.system || '';
   
   // Generate a cache key for this request
-  const cacheKey = generateCacheKey(messages, model);
+  const cacheKey = generateCacheKey(messages, model, systemPrompt);
   
   // Only try to use cache if it's enabled
   if (cacheConfig.enabled) {
@@ -191,9 +193,14 @@ export async function sendMessageWithCache(
   try {
     const anthropic = createAnthropicClient();
     
+    // Claude-3 requires user and assistant messages only in the messages array
+    // System messages are passed as a top-level system parameter
+    const filteredMessages = messages.filter(msg => msg.role !== 'system');
+    
     const response = await anthropic.messages.create({
       model,
-      messages,
+      messages: filteredMessages,
+      system: systemPrompt,
       ...anthropicOptions
     });
     

@@ -34,7 +34,7 @@ async function updateMemoryWithCaching() {
   console.log('===================================================');
   
   // The user's request to update their memory
-  const updateRequest = "Add to my AI memory that I studied computer science at Leeds University and computing at Imperial College";
+  const updateRequest = "Add to my AI memory that I studied computer science at State University and information technology at Tech Institute";
   
   // This is the system prompt that instructs Claude on how to process memory updates
   const systemPrompt = `You are a memory processing assistant that handles updates to the user's myAI Memory.
@@ -63,7 +63,7 @@ Return your response in the format:
     console.log(`Cache used: ${firstResponse.fromCache ? 'Yes' : 'No'}`);
     
     // Now imagine another user makes a similar request
-    const similarRequest = "Please update my memory to include that I studied Computer Science at Leeds and Computing at Imperial College London";
+    const similarRequest = "Please update my memory to include that I studied Computer Science at State University and Information Technology at Tech Institute";
     
     console.log('\n2️⃣ Processing a similar memory update request...');
     console.time('Second request (similar)');
@@ -105,10 +105,10 @@ Return your response in the format:
         console.log('\n```markdown');
         console.log('# User Information');
         console.log('## Use this information if you need to reference them directly');
-        console.log('-~- Name: James King');
-        console.log('-~- Age: 40');
-        console.log('-~- Location: London');
-        console.log('-~- Education: BSc Computer Science at Leeds University, MSc Computing at Imperial College');
+        console.log('-~- Name: John Doe');
+        console.log('-~- Age: 35');
+        console.log('-~- Location: New York');
+        console.log('-~- Education: BS Computer Science at State University, MS Information Technology at Tech Institute');
         console.log('-~- ...(other existing information)');
         console.log('```');
         

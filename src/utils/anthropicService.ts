@@ -54,12 +54,24 @@ export class AnthropicService {
         temperature: options.temperature !== undefined ? options.temperature : 0.7
       };
       
+      // Extract system message from messages array for Claude-3 format
+      let systemPrompt = '';
+      const nonSystemMessages = messages.filter(msg => {
+        if (msg.role === 'system') {
+          // Concatenate multiple system messages if present
+          systemPrompt += (systemPrompt ? '\n\n' : '') + msg.content;
+          return false;
+        }
+        return true;
+      });
+      
       const response = await sendMessageWithCache(
-        messages, 
+        nonSystemMessages, 
         {
           model,
           cacheConfig,
-          anthropicOptions
+          anthropicOptions,
+          system: systemPrompt
         }
       );
       
@@ -92,21 +104,23 @@ export class AnthropicService {
       disableCache?: boolean;
     } = {}
   ) {
-    const messages: MessageContent[] = [];
+    // In Claude-3, we don't need to add system messages to the array
+    // Instead, we'll pass a modified options object with the system prompt
+    const messages: MessageContent[] = [
+      {
+        role: 'user',
+        content: question
+      }
+    ];
     
-    if (systemPrompt) {
-      messages.push({
-        role: 'system',
-        content: systemPrompt
-      });
-    }
+    // Create a new options object with the system prompt
+    const updatedOptions = {
+      ...options,
+      // We'll handle this in sendMessage by extracting system messages
+      systemPrompt
+    };
     
-    messages.push({
-      role: 'user',
-      content: question
-    });
-    
-    return this.sendMessage(messages, options);
+    return this.sendMessage(messages, updatedOptions);
   }
 }
 
