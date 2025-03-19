@@ -66,6 +66,9 @@ export function generateCacheKey(messages: any[], model: string, system?: string
   // Create a string representation of messages, model, and system prompt
   const dataString = JSON.stringify({ messages, model, system });
   
+  // Check if this is a memory-related query (to potentially use different caching rules)
+  const isMemoryQuery = detectMemoryQuery(messages, system || '');
+  
   // Simple hash function
   let hash = 0;
   for (let i = 0; i < dataString.length; i++) {
@@ -74,7 +77,40 @@ export function generateCacheKey(messages: any[], model: string, system?: string
     hash = hash & hash; // Convert to 32bit integer
   }
   
-  return `${model}_${Math.abs(hash).toString(16)}`;
+  // Add a prefix to distinguish memory queries (for potential future enhancements)
+  const prefix = isMemoryQuery ? 'memory_' : '';
+  return `${prefix}${model}_${Math.abs(hash).toString(16)}`;
+}
+
+/**
+ * Detect if a query is related to memory content
+ * This helps identify queries that can be cached for longer periods
+ */
+function detectMemoryQuery(messages: any[], systemPrompt: string): boolean {
+  // Convert all content to lowercase for case-insensitive matching
+  const allContent = [
+    systemPrompt,
+    ...messages.map(m => typeof m.content === 'string' ? m.content.toLowerCase() : '')
+  ].join(' ').toLowerCase();
+  
+  // Keywords that suggest this is a memory-related query
+  const memoryKeywords = [
+    'myai memory',
+    'claude.md',
+    'master.md',
+    'user information',
+    'preferences',
+    'my memory',
+    'i previously told you',
+    'remember that i',
+    'my profile',
+    'as mentioned in my profile',
+    'user profile',
+    'personal information'
+  ];
+  
+  // Check if any memory keywords are present
+  return memoryKeywords.some(keyword => allContent.includes(keyword));
 }
 
 /**
@@ -141,9 +177,19 @@ export async function getFromCache(
     const cacheContent = await fs.readFile(cachePath, 'utf-8');
     const cacheData: CachedResponse = JSON.parse(cacheContent);
     
+    // Use different expiration rules for memory-related queries
+    const isMemoryQuery = cacheKey.startsWith('memory_');
+    
+    // For memory queries, use a much longer TTL or never expire
+    const effectiveTtl = isMemoryQuery ? 
+      // One year (essentially permanent) for memory queries
+      31536000000 : 
+      // Regular TTL for other queries
+      config.ttl;
+    
     // Check if cache is expired
     const now = Date.now();
-    if (now - cacheData.timestamp > config.ttl) {
+    if (now - cacheData.timestamp > effectiveTtl) {
       // Cache expired
       return null;
     }

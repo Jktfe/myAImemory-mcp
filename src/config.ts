@@ -29,7 +29,7 @@ const defaultConfig = {
     enabled: process.env.ENABLE_ANTHROPIC === 'true', // Optional feature flag
     cache: {
       enabled: process.env.ENABLE_PROMPT_CACHE === 'true', // Defaults to disabled unless explicitly enabled
-      ttl: 3600000, // 1 hour cache time to live
+      ttl: 31536000000, // 1 year cache time to live - effectively permanent for memory content
       cachePath: path.join(os.homedir(), '.cache', 'myai-memory-sync', 'prompt-cache')
     }
   },

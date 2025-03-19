@@ -23,6 +23,7 @@ const { homedir } = require('os');
 // CommonJS already provides __dirname, so we don't need fileURLToPath
 
 // Use regular require for glob package
+// Use sync method for simplicity
 const glob = require('glob');
 
 // Default configuration
@@ -119,9 +120,8 @@ async function findClaudeMdFiles() {
     logVerbose(`Searching for CLAUDE.md files in: ${dir}`);
     
     try {
-      // Use glob to find all CLAUDE.md files in the directory and its subdirectories
-      // Use glob with promise interface
-      const files = await glob.glob('**/CLAUDE.md', { cwd: dir, absolute: true });
+      // Use sync method to avoid promise complexity
+      const files = glob.sync('**/CLAUDE.md', { cwd: dir, absolute: true });
       
       files.forEach(file => {
         claudeMdFiles.push(file);
@@ -151,6 +151,7 @@ async function readMasterTemplate() {
 
 /**
  * Updates a target file with the master template content
+ * Finds the "# myAI Memory" section, replaces it, or adds if missing
  * @param {string} targetPath Path to the target file
  * @param {string} content Content to write to the file
  * @returns {Promise<boolean>} True if successful, false otherwise
@@ -165,8 +166,37 @@ async function updateFile(targetPath, content) {
     // Ensure the directory exists
     await ensureDirectory(path.dirname(targetPath));
     
+    // Check if file already exists
+    let existingContent = '';
+    try {
+      existingContent = await fs.readFile(targetPath, 'utf-8');
+    } catch (error) {
+      // File doesn't exist, we'll create it
+      logVerbose(`Creating new file: ${targetPath}`);
+    }
+    
+    let newContent = '';
+    
+    if (existingContent) {
+      // Look for the "# myAI Memory" section
+      const myAIMemoryRegex = /# myAI Memory[\s\S]*?(?=^#[^#]|\Z)/m;
+      
+      if (myAIMemoryRegex.test(existingContent)) {
+        // Replace existing myAI Memory section
+        newContent = existingContent.replace(myAIMemoryRegex, content);
+        logVerbose(`Replaced existing myAI Memory section in: ${targetPath}`);
+      } else {
+        // Add myAI Memory section at the beginning
+        newContent = content + '\n\n' + existingContent;
+        logVerbose(`Added myAI Memory section to: ${targetPath}`);
+      }
+    } else {
+      // New file, just use content
+      newContent = content;
+    }
+    
     // Write the file
-    await fs.writeFile(targetPath, content, 'utf-8');
+    await fs.writeFile(targetPath, newContent, 'utf-8');
     logSuccess(`Updated file: ${targetPath}`);
     return true;
   } catch (error) {
