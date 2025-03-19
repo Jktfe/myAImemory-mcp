@@ -6,7 +6,7 @@ The concept is simple, rather than use a specific service, use an MCP that autom
 
 While more specific memory management is available, this is the most effective way to ensure a consistent memory across all your Claude interfaces.
 
-[![smithery badge](https://smithery.ai/badge/@Jktfe/myaimemory)](https://smithery.ai/server/@Jktfe/myaimemory)
+[![smithery badge](https://smithery.ai/badge/@Jktfe/myaimemory-mcp)](https://smithery.ai/server/@Jktfe/myaimemory-mcp)
 
 ## Features
 
