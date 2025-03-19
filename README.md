@@ -4,10 +4,6 @@
 
 **Tired of repeating yourself to Claude every time you start a new chat?** myAI Memory Sync is a game-changing MCP tool that seamlessly synchronizes your preferences, personal details, and code standards across ALL your Claude interfaces! Just update once, and your changes instantly appear everywhere - from Claude Desktop to Claude Code, Windsurf, and Claude.ai web. With our cutting-edge caching system, memory-related queries are up to 2000x faster! Stop wasting tokens on repetitive instructions and enjoy a truly personalized AI experience.
 
-<p align="center">
-  <img src="https://smithery.ai/assets/myaimemory-banner.png" alt="myAI Memory Sync Banner" width="600">
-</p>
-
 ## 🚀 Quick Start
 
 ```bash
@@ -198,9 +194,6 @@ myAI Memory Sync uses a modular architecture with these key components:
 - **Natural Language Processor**: Extracts structured data from natural language memory commands
 - **Memory Cache Service**: Optimizes performance with multi-level caching strategies
 
-<p align="center">
-  <img src="https://smithery.ai/assets/myaimemory-architecture.png" alt="Architecture Diagram" width="700">
-</p>
 
 ## 🔍 Detailed Features
 
@@ -389,10 +382,6 @@ Our caching system delivers incredible performance improvements:
 | Section Lookup | ~1600ms | ~0.8ms | 2000x |
 | Template Parse | ~120ms | ~0.1ms | 1200x |
 | Platform Sync | ~850ms | ~350ms | 2.4x |
-
-<p align="center">
-  <img src="https://smithery.ai/assets/myaimemory-performance.png" alt="Performance Chart" width="600">
-</p>
 
 ## 🔒 Security & Privacy
 
