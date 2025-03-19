@@ -149,6 +149,91 @@ async function updateMyAIMemorySection(filePath: string, memorySection: string):
 }
 
 /**
+ * Check if CLAUDE.md is gitignored in a project
+ * @param projectPath The path to the project root
+ * @returns True if CLAUDE.md is gitignored, false otherwise
+ */
+async function isClaudeMdGitignored(projectPath: string): Promise<boolean> {
+  try {
+    const gitignorePath = path.join(projectPath, '.gitignore');
+    
+    // Check if .gitignore exists
+    try {
+      await fs.access(gitignorePath);
+    } catch (err) {
+      // .gitignore doesn't exist
+      return false;
+    }
+    
+    // Read the .gitignore file
+    const gitignoreContent = await fs.readFile(gitignorePath, 'utf-8');
+    
+    // Check if CLAUDE.md is mentioned
+    const lines = gitignoreContent.split('\n');
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      // Check for any of these patterns that would match CLAUDE.md
+      if (
+        trimmedLine === 'CLAUDE.md' ||
+        trimmedLine === '/CLAUDE.md' ||
+        trimmedLine === '**/CLAUDE.md' ||
+        trimmedLine === 'CLAUDE.*'
+      ) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (err) {
+    console.error(`Error checking if CLAUDE.md is gitignored in ${projectPath}:`, err);
+    return false;
+  }
+}
+
+/**
+ * Adds CLAUDE.md to the .gitignore file of a project
+ * @param projectPath The path to the project root
+ */
+async function addClaudeMdToGitignore(projectPath: string): Promise<void> {
+  try {
+    const gitignorePath = path.join(projectPath, '.gitignore');
+    
+    // Create .gitignore if it doesn't exist
+    let content = '';
+    try {
+      await fs.access(gitignorePath);
+      content = await fs.readFile(gitignorePath, 'utf-8');
+    } catch (err) {
+      // .gitignore doesn't exist, create it
+      console.error(`Creating new .gitignore file in ${projectPath}`);
+    }
+    
+    // Add CLAUDE.md to .gitignore if it's not already there
+    if (!content.includes('CLAUDE.md')) {
+      // Add a header if this is a new file
+      if (!content.trim()) {
+        content = '# Git ignore file\n\n';
+      }
+      
+      // Make sure it ends with a newline
+      if (content.length > 0 && !content.endsWith('\n')) {
+        content += '\n';
+      }
+      
+      // Add CLAUDE.md
+      content += '/CLAUDE.md\n';
+      
+      // Write the updated content back to the file
+      await fs.writeFile(gitignorePath, content, 'utf-8');
+      console.error(`Added CLAUDE.md to .gitignore in ${projectPath}`);
+    }
+  } catch (err) {
+    console.error(`Error adding CLAUDE.md to .gitignore in ${projectPath}:`, err);
+    throw err;
+  }
+}
+
+/**
  * Claude Code synchronization (CLAUDE.md files in project roots)
  */
 export class ClaudeCodeSyncer implements PlatformSyncer {
@@ -252,6 +337,19 @@ export class ClaudeCodeSyncer implements PlatformSyncer {
           try {
             const dirPath = path.join(resolvedProjectsPath, dir.name);
             const claudeMdPath = path.join(dirPath, 'CLAUDE.md');
+            
+            // First, ensure CLAUDE.md is gitignored
+            const isGitignored = await isClaudeMdGitignored(dirPath);
+            if (!isGitignored) {
+              console.error(`CLAUDE.md is not gitignored in ${dirPath}. Adding to .gitignore...`);
+              try {
+                await addClaudeMdToGitignore(dirPath);
+                console.error(`Successfully added CLAUDE.md to .gitignore in ${dirPath}`);
+              } catch (gitignoreErr) {
+                console.error(`Failed to add CLAUDE.md to .gitignore in ${dirPath}:`, gitignoreErr);
+                // Continue anyway - we'll still update the file
+              }
+            }
             
             // Check if CLAUDE.md exists and ensure it's writable
             const isWritable = await ensureFileWritable(claudeMdPath);

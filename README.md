@@ -8,6 +8,20 @@ While more specific memory management is available, this is the most effective w
 
 [![smithery badge](https://smithery.ai/badge/@Jktfe/myaimemory-mcp)](https://smithery.ai/server/@Jktfe/myaimemory-mcp)
 
+## Security Note
+
+⚠️ **IMPORTANT**: CLAUDE.md files may contain personal information and should never be committed to version control. 
+
+This tool automatically:
+- Checks if CLAUDE.md is properly added to .gitignore in each project
+- Adds CLAUDE.md to .gitignore if it's missing
+- Ensures your personal information won't be accidentally exposed
+
+For additional security:
+- Make sure to verify CLAUDE.md appears in your .gitignore file in all projects
+- Check existing repositories to ensure CLAUDE.md hasn't been committed previously 
+- If you find CLAUDE.md in your Git history, consider using tools like BFG Repo-Cleaner or git-filter-repo to remove it
+
 ## Features
 
 - Manage a standardized "myAI Memory" template with consistent formatting
