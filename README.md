@@ -169,6 +169,17 @@ You can use natural language commands to interact with myAI Memory Sync. We've i
 ./remember.sh "Use myAI Memory to remember I prefer dark mode in my code editors"
 ```
 
+### "use myAI memory" Quick Access
+
+When you say **"use myAI memory"** to Claude, the system:
+
+1. Loads your entire memory template (with caching for speed if enabled)
+2. Makes all your preferences instantly available to Claude
+3. Pre-caches individual sections for even faster access
+4. Handles section-specific queries intelligently
+
+With prompt caching enabled (optional), subsequent memory queries are nearly instant, making interactions with your memory much more fluid and responsive.
+
 ### Supported Natural Language Commands
 
 The following commands are supported:
@@ -198,6 +209,7 @@ The system will automatically:
 2. Create new sections if you specify a section that doesn't exist yet
 3. Format your content properly with the `-~-` prefix
 4. Sync your updated memory to all configured platforms
+5. Update the memory cache so future accesses use the latest information
 
 ### Using from the CLI
 
@@ -365,6 +377,16 @@ For major changes, please open an issue first to discuss what you would like to 
 
 We've recently added several improvements to myAI Memory Sync:
 
+### Prompt Caching & Enhanced Memory Access
+
+- **"use myAI memory" Quick Access**: The system now intelligently handles "use myAI memory" requests with pre-cached templates for near-instant access to your memory.
+
+- **Anthropic API Integration (Optional)**: Added optional integration with the Anthropic API that enables prompt caching for significant performance improvements.
+
+- **Section-Level Caching**: Individual memory sections are cached separately, allowing section-specific queries to be processed even faster.
+
+- **Automatic Cache Updates**: When your memory is updated and synced to platforms, the cache is automatically refreshed to ensure you always get the latest information.
+
 ### Enhanced Synchronization and Error Handling
 
 - **Emergency Sync Command**: Added a robust emergency sync command that can bypass the MCP server to directly synchronize templates across platforms. This is particularly useful for fixing synchronization issues or when the MCP server is not available.
@@ -420,18 +442,123 @@ If you encounter synchronization issues, try the following steps:
 
 4. **Verify File Paths**: Make sure the configured paths in `config.json` point to the correct locations for your environment.
 
+## Prompt Caching with Anthropic API (Optional)
+
+myAI Memory now includes **optional** built-in prompt caching for Anthropic API calls, which can significantly reduce latency and API costs when making repeated or similar requests.
+
+> ⚠️ **This feature is entirely optional** and disabled by default. You can safely use myAI Memory Sync without ever enabling the Anthropic API integration.
+
+### How Prompt Caching Works
+
+1. **Automatic caching**: When enabled, requests to the Anthropic API are cached based on message content and model.
+2. **Time-based expiration**: Cached responses expire after a configurable time period (default: 1 hour).
+3. **Disk-based storage**: Cached responses are stored on disk, persisting between server restarts.
+4. **Completely optional**: Both the Anthropic API integration and the caching feature can be enabled/disabled independently.
+
+### User Experience Benefits
+
+- **Faster responses**: Subsequent identical or similar queries respond nearly instantly
+- **Reduced API costs**: Fewer API calls means lower usage costs
+- **Offline capability**: Previously cached responses remain available when offline
+- **Consistent answers**: Get the same high-quality response for repeated questions
+
+### Enabling the Feature
+
+To enable the Anthropic API integration with prompt caching, add these variables to your `.env` file:
+
+```bash
+# Required: Your Anthropic API key
+ANTHROPIC_API_KEY="your-api-key-here"
+
+# Enable the Anthropic API integration
+ENABLE_ANTHROPIC="true"
+
+# Enable prompt caching (optional, can be enabled without enabling caching)
+ENABLE_PROMPT_CACHE="true"
+```
+
+The cache behavior can be further customized in `config.json`:
+
+```json
+{
+  "anthropic": {
+    "defaultModel": "claude-3-haiku-20240307",
+    "cache": {
+      "ttl": 3600000, // Cache time-to-live in milliseconds (1 hour)
+      "cachePath": "~/.cache/myai-memory-sync/prompt-cache"
+    }
+  }
+}
+```
+
+### Using Prompt Caching in Your Code
+
+```typescript
+import { anthropicService } from './src/utils/anthropicService.js';
+
+// Simple question answering
+const response = await anthropicService.askQuestion(
+  "What is prompt caching?",
+  "You are a helpful assistant explaining technical concepts."
+);
+
+// Check if response came from cache
+if (response.fromCache) {
+  console.log("Response retrieved from cache");
+}
+
+// Explicitly disable caching for sensitive or time-critical queries
+const freshResponse = await anthropicService.askQuestion(
+  "What's the current time?", 
+  undefined, 
+  { disableCache: true }
+);
+```
+
+### Example Script
+
+We've included a demonstration script that shows prompt caching in action:
+
+```bash
+# Build the project first
+npm run build
+
+# Run the example (requires ANTHROPIC_API_KEY to be set)
+node examples/promptCaching.js
+```
+
+This script:
+1. Makes an initial API call (typically takes a few seconds)
+2. Makes a second identical call that uses the cache (typically <50ms)
+3. Makes a third call with caching explicitly disabled
+
+The performance difference is immediately noticeable, often showing 95-99% faster response times for cached queries.
+
+### Privacy and Security
+
+- All cached data is stored locally on your device
+- Cache entries expire automatically after the configured TTL
+- The feature is disabled by default and requires explicit opt-in
+- You can manually clear the cache at any time using the included script:
+
+```bash
+# Clear all cached responses
+node examples/clearCache.js
+```
+
 ## Future Plans
 
-We're planning to expand myAI Memory Sync to support more AI platforms:
+We're planning to expand myAI Memory Sync with these upcoming features:
 
 - **DeepSeek**: Integration with DeepSeek Chat and API
 - **OpenAI**: Support for ChatGPT and API-based models
-- **Anthropic API**: Direct API integration for Claude models
 - **Cross-platform sync**: Improved synchronization between different AI platforms
 - **Mobile support**: Better integration with mobile clients
 - **Custom templates**: More flexible template customization options
 - **Enhanced preset management**: Categories and sharing for presets
 - **Background synchronization**: Fully automated background sync with all platforms
+- **Memory analytics**: Insights into your memory usage patterns
+- **Natural language template editing**: Edit your memory with plain language
 
 If you're interested in contributing to any of these features, please check the issues section for current development priorities.
 
@@ -442,8 +569,14 @@ myai-memory-sync/
 ├── data/              # Data storage
 │   ├── presets/       # Preset templates
 │   └── template.md    # Main template file
+├── examples/          # Example scripts
+│   ├── promptCaching.js  # Demo of prompt caching
+│   └── clearCache.js     # Utility to clear prompt cache
 ├── src/               # Source code
 │   ├── services/      # Service implementations
+│   ├── utils/         # Utility functions
+│   │   ├── anthropicUtils.ts  # Prompt caching utilities
+│   │   └── anthropicService.ts  # Claude API service
 │   ├── direct-index.ts  # Direct MCP server entry point (stdio)
 │   ├── direct-mcp.ts    # Direct MCP server implementation
 │   ├── direct-server.ts # Direct HTTP server implementation

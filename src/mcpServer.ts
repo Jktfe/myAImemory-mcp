@@ -6,6 +6,19 @@ import { PlatformType } from './types.js';
 import { generateTemplate } from './templateParser.js';
 import { processMemoryCommand } from './naturalLanguageParser.js';
 
+// Optional import for memory cache service - only used if Anthropic API is enabled
+let memoryCacheService: any = null;
+try {
+  import('./utils/memoryCacheService.js').then(module => {
+    memoryCacheService = module;
+    console.error('Memory cache service loaded for "use myAI memory" support');
+  }).catch(() => {
+    console.error('Memory cache service not available (optional Anthropic features not enabled)');
+  });
+} catch (e) {
+  // This is expected if Anthropic API is not enabled
+}
+
 /**
  * Create and configure the MCP server
  */
@@ -399,6 +412,29 @@ export async function createMcpServer(): Promise<McpServer> {
       },
       async ({ command }) => {
         try {
+          // Check if this is a "use myAI memory" query that should use the enhanced cache
+          if (memoryCacheService && 
+              memoryCacheService.processMemoryQuery &&
+              (command.toLowerCase().includes('use myai memory') || 
+               command.toLowerCase().includes('tell me about my'))) {
+            
+            console.error('Using enhanced memory cache for query:', command);
+            const response = await memoryCacheService.processMemoryQuery(command);
+            
+            if (response.success) {
+              // Format response from Claude
+              const text = response.content.map(c => c.text).join('');
+              return {
+                content: [{ type: 'text', text }],
+                isError: false
+              };
+            } else {
+              // Fall back to standard processing if cache service fails
+              console.error('Memory cache service failed, falling back to standard processing');
+            }
+          }
+          
+          // Standard processing path (either no cache service or fallback)
           const result = await processMemoryCommand(command);
           
           return {

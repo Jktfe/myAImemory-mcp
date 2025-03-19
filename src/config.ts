@@ -22,6 +22,17 @@ const defaultConfig = {
     slowMo: 50,
     defaultTimeout: 30000
   },
+  // Anthropic API configuration
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY || '',
+    defaultModel: 'claude-3-haiku-20240307',
+    enabled: process.env.ENABLE_ANTHROPIC === 'true', // Optional feature flag
+    cache: {
+      enabled: process.env.ENABLE_PROMPT_CACHE === 'true', // Defaults to disabled unless explicitly enabled
+      ttl: 3600000, // 1 hour cache time to live
+      cachePath: path.join(os.homedir(), '.cache', 'myai-memory-sync', 'prompt-cache')
+    }
+  },
   // File paths
   paths: {
     masterTemplate: path.join(__dirname, '..', 'myAI Master.md'),
@@ -57,6 +68,14 @@ export const config = {
     ...defaultConfig.puppeteer,
     ...(loadedConfig as any).puppeteer
   },
+  anthropic: {
+    ...defaultConfig.anthropic,
+    ...(loadedConfig as any).anthropic,
+    cache: {
+      ...defaultConfig.anthropic.cache,
+      ...((loadedConfig as any).anthropic || {}).cache
+    }
+  },
   paths: {
     ...defaultConfig.paths,
     ...(loadedConfig as any).paths
@@ -66,6 +85,10 @@ export const config = {
 // Environment variables take precedence over config file
 if (process.env.MY_EMAIL) {
   config.claudeWeb.email = process.env.MY_EMAIL;
+}
+
+if (process.env.ANTHROPIC_API_KEY) {
+  config.anthropic.apiKey = process.env.ANTHROPIC_API_KEY;
 }
 
 // Create a sample config file if it doesn't exist
@@ -82,6 +105,15 @@ if (!fs.existsSync(CONFIG_FILE)) {
             headless: false,
             slowMo: 50,
             defaultTimeout: 30000
+          },
+          anthropic: {
+            apiKey: "YOUR_API_KEY", // Will be overridden by .env if present
+            defaultModel: "claude-3-haiku-20240307",
+            cache: {
+              enabled: true,
+              ttl: 3600000, // 1 hour
+              cachePath: "~/.cache/myai-memory-sync/prompt-cache"
+            }
           },
           paths: {
             masterTemplate: './myAI Master.md',

@@ -7,6 +7,21 @@ import { templateService } from './templateService.js';
 import { config } from '../config.js';
 import { ClaudeCodeSyncer, ensureFileWritable } from '../platformSync.js';
 
+// Import the memory cache service dynamically - handles if Anthropic features are not enabled
+let memoryCacheService: any = null;
+try {
+  // We'll attempt to load this module, but it's optional
+  import('../utils/memoryCacheService.js').then(module => {
+    memoryCacheService = module;
+    console.error('Memory cache service loaded for prompt caching');
+  }).catch(err => {
+    console.error('Memory cache service not available (Anthropic features likely not enabled)');
+  });
+} catch (e) {
+  // This is expected if Anthropic features are not enabled
+  console.error('Memory cache service could not be imported');
+}
+
 /**
  * Base platform sync interface
  */
@@ -369,6 +384,18 @@ export class PlatformService {
           success: false,
           message: `No syncer configured for platform: ${platform}`
         });
+      }
+    }
+    
+    // Update memory cache after successful sync (if available)
+    if (memoryCacheService && memoryCacheService.updateCacheAfterSync) {
+      try {
+        console.error('Updating memory cache after sync...');
+        await memoryCacheService.updateCacheAfterSync();
+        console.error('Memory cache updated successfully');
+      } catch (err) {
+        console.error('Error updating memory cache:', err);
+        // This is non-critical, so we don't add it to results
       }
     }
     
