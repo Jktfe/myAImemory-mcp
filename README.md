@@ -4,6 +4,25 @@
 
 **Tired of repeating yourself to Claude every time you start a new chat?** myAI Memory Sync is a game-changing MCP tool that seamlessly synchronizes your preferences, personal details, and code standards across ALL your Claude interfaces! Just update once, and your changes instantly appear everywhere - from Claude Desktop to Claude Code, Windsurf, and Claude.ai web. With our cutting-edge caching system, memory-related queries are up to 2000x faster! Stop wasting tokens on repetitive instructions and enjoy a truly personalized AI experience.
 
+## How myAImemory-mcp Compares to Other Memory Tools
+
+While several excellent memory tools exist for AI systems, myAImemory-mcp serves a specific purpose as a Model Context Protocol (MCP) tool:
+
+| Tool | Primary Focus | Privacy Model | Integration | Unique Strength |
+|------|--------------|--------------|------------|----------------|
+| **myAImemory-mcp** | User preferences across Claude interfaces | Local-first, no data sent to external servers | Claude-specific MCP | Cross-platform synchronization with high-performance caching |
+| Graphiti | Temporal knowledge graphs | Database-dependent | General agent framework | Temporal awareness in knowledge representation |
+| Letta/MemGPT | Stateful agent framework | Server-based | Multi-model support | Complete agent architecture |
+| Mem0 | Personalized AI interactions | API-based | Multi-platform | Multi-level memory hierarchy |
+| Memary | Human-like memory for agents | Graph database | Agent-focused | Human memory emulation |
+| Cognee | Reliable memory for AI apps | Multiple storage options | Data pipeline focused | Extensive data source integration |
+
+**Key Advantages of myAImemory-mcp:**
+- **Privacy-First**: All data remains on your device, no personal information sent to external servers
+- **Performance**: Leverages Claude's caching capabilities for dramatic speed improvements
+- **Simplicity**: Natural language updates to your preferences across all Claude interfaces
+- **MCP Integration**: Purpose-built as a Claude MCP for seamless integration
+
 ## 🚀 Quick Start
 
 ```bash
