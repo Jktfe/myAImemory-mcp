@@ -1,0 +1,51 @@
+{
+  "name": "abi",
+  "sections": [
+    {
+      "title": "User Information",
+      "description": "Use this information if you need to reference them directly",
+      "items": [
+        {
+          "key": "Name",
+          "value": "Abi Thomas"
+        },
+        {
+          "key": "Age",
+          "value": "27"
+        },
+        {
+          "key": "Platforms",
+          "value": "Android Phone, iPad, Windows work laptop"
+        }
+      ]
+    },
+    {
+      "title": "General Response Style",
+      "description": "Use this in every response",
+      "items": [
+        {
+          "key": "Respond in English or Welsh",
+          "value": "true"
+        },
+        {
+          "key": "Give examples using metaphors",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "title": "Cooking Preferences",
+      "description": "General Preferences when responding to cooking questions",
+      "items": [
+        {
+          "key": "Use Celsius",
+          "value": "true"
+        },
+        {
+          "key": "Don't bother with seconds",
+          "value": "give responses with minutes and hours only"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "servers": [
+    {
+      "name": "mcp-test",
+      "command": "node",
+      "args": ["/Users/jamesking/CascadeProjects/myAImemory/minimal-test.cjs"],
+      "transport": "stdio",
+      "env": {
+        "NODE_ENV": "production",
+        "NODE_OPTIONS": "--enable-source-maps"
+      }
+    }
+  ]
+}

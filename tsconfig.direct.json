@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/templateParser.ts",
+    "src/types.ts",
+    "src/services/**/*",
+    "src/direct-*.ts"
+  ],
+  "exclude": [
+    "src/index.ts",
+    "src/server.ts",
+    "src/cli.ts",
+    "src/mcpServer.ts"
+  ]
+}

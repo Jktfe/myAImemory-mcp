@@ -1,0 +1,16 @@
+{
+  "claudeWeb": {
+    "email": "YOUR_EMAIL"
+  },
+  "puppeteer": {
+    "headless": false,
+    "slowMo": 50,
+    "defaultTimeout": 30000
+  },
+  "paths": {
+    "masterTemplate": "./myAI Master.md",
+    "claudeDesktopConfig": "~/Library/Application Support/Claude/claude_desktop_config.json",
+    "windsurfMemoryPath": "~/.codeium/windsurf/memories/global_rules.md"
+  },
+  "syncInterval": 3600000
+}
