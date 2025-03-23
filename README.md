@@ -4,10 +4,6 @@
 
 **Tired of repeating yourself to Claude every time you start a new chat?** myAI Memory Sync is a game-changing MCP tool that seamlessly synchronizes your preferences, personal details, and code standards across ALL your Claude interfaces! Just update once, and your changes instantly appear everywhere - from Claude Desktop to Claude Code, Windsurf, and Claude.ai web. With our cutting-edge caching system, memory-related queries are up to 2000x faster! Stop wasting tokens on repetitive instructions and enjoy a truly personalized AI experience.
 
-<p align="center">
-  <img src="https://smithery.ai/assets/myaimemory-banner.png" alt="myAI Memory Sync Banner" width="600">
-</p>
-
 ## 🚀 Quick Start
 
 ```bash
@@ -24,6 +20,27 @@ npm run build
 # Start MCP server
 ./start-memory-sync.sh
 ```
+
+### 🔄 Direct Sync Method (Simple Alternative)
+
+For a simpler approach that doesn't require running an MCP server, you can use the standalone sync script:
+
+```bash
+# One-time sync of all memory files
+node sync-memory.js
+```
+
+This script will:
+- Read from your "myAI Master.md" file
+- Update all CLAUDE.md files in your projects
+- Update your Windsurf memory settings
+- All without storing sensitive information in the git repository
+
+### 🔒 Privacy and Security
+
+- The "myAI Master.md" file with your personal information is excluded from git tracking
+- All CLAUDE.md files are also excluded to protect your privacy
+- Use the included `.gitignore` to ensure sensitive files remain private
 
 Then in Claude, just say:
 
@@ -197,10 +214,6 @@ myAI Memory Sync uses a modular architecture with these key components:
 - **Platform Synchronizers**: Implements the `PlatformSyncer` interface for each target platform
 - **Natural Language Processor**: Extracts structured data from natural language memory commands
 - **Memory Cache Service**: Optimizes performance with multi-level caching strategies
-
-<p align="center">
-  <img src="https://smithery.ai/assets/myaimemory-architecture.png" alt="Architecture Diagram" width="700">
-</p>
 
 ## 🔍 Detailed Features
 
@@ -390,9 +403,7 @@ Our caching system delivers incredible performance improvements:
 | Template Parse | ~120ms | ~0.1ms | 1200x |
 | Platform Sync | ~850ms | ~350ms | 2.4x |
 
-<p align="center">
-  <img src="https://smithery.ai/assets/myaimemory-performance.png" alt="Performance Chart" width="600">
-</p>
+
 
 ## 🔒 Security & Privacy
 
