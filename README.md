@@ -91,7 +91,19 @@ This script will:
 - All CLAUDE.md files are also excluded to protect your privacy
 - Use the included `.gitignore` to ensure sensitive files remain private
 
-Then in Claude, just say:
+### 🗣️ Supported Natural Language Commands
+
+You can interact with myAI Memory using these natural language patterns:
+
+| Command Pattern | Example | Purpose |
+|----------------|---------|---------|
+| `Use myAI Memory to remember [information]` | "Use myAI Memory to remember I prefer TypeScript over JavaScript" | Adds information to the appropriate section based on content |
+| `Remember that [information]` | "Remember that I live in London" | Shorter alternative to add information to memory |
+| `Add to my memory that [information]` | "Add to my memory that I have two cars" | Another way to add information to memory |
+| `Use myAI Memory to add to [section] [information]` | "Use myAI Memory to add to Coding Preferences I prefer dark mode" | Add information to a specific section |
+| `Update my [section] to include that [information]` | "Update my User Information to include that my birthday is March 29" | Update a specific section with new information |
+
+Note: To perform a full sync across all platforms, use the command line: `node sync-memory.js`
 
 ```
 You: Use myAI Memory to remember I prefer TypeScript over JavaScript
@@ -501,6 +513,27 @@ We take your privacy seriously:
    - Clear cache with `node dist/cli.js --clear-cache`
    - Verify Anthropic API key is correctly set
    - Check memory file integrity with `node dist/cli.js --validate`
+
+4. **Natural Language Commands Not Working**
+   - Make sure to use exactly one of the supported command patterns (see Supported Natural Language Commands section)
+   - If Claude doesn't recognize your command, try a different pattern
+   - For syncing across all platforms, use the direct script: `node sync-memory.js`
+
+### Manual Syncing
+
+If you're experiencing issues with natural language commands or the MCP server:
+
+```bash
+# Direct sync approach (most reliable)
+cd /path/to/myAImemory
+node sync-memory.js
+
+# Alternative emergency sync (if permissions need fixing)
+cd /path/to/myAImemory
+./safe-memory.sh sync
+```
+
+These methods directly read from your master file and update all platforms without relying on the MCP server or natural language processing.
 
 ### Logs and Debugging
 
