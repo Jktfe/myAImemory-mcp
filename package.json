@@ -7,7 +7,8 @@
   "bin": {
     "myai-sync": "dist/cli.js",
     "myai-memory-sync": "dist/direct-index.js",
-    "myai-memory-sync-http": "dist/direct-server.js"
+    "myai-memory-sync-http": "dist/direct-server.js",
+    "myai-safe": "dist/safe-cli.js"
   },
   "scripts": {
     "start": "node dist/direct-index.js",
@@ -19,7 +20,11 @@
     "build:full": "tsc",
     "lint": "eslint 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "safe": "chmod +x ./safe-memory.sh && ./safe-memory.sh",
+    "safe:sync": "chmod +x ./safe-memory.sh && ./safe-memory.sh sync",
+    "safe:backup": "chmod +x ./safe-memory.sh && ./safe-memory.sh backup",
+    "safe:list": "chmod +x ./safe-memory.sh && ./safe-memory.sh list-backups"
   },
   "keywords": [
     "claude",
@@ -33,6 +38,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@modelcontextprotocol/sdk": "^1.7.0",
+    "chalk": "^5.3.0",
     "commander": "^13.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

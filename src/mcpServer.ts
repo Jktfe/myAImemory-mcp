@@ -5,6 +5,7 @@ import { platformService } from './services/platformService.js';
 import { PlatformType } from './types.js';
 import { generateTemplate } from './templateParser.js';
 import { processMemoryCommand } from './naturalLanguageParser.js';
+import { SafeSyncManager } from './safeSyncManager.js';
 
 // Optional import for memory cache service - only used if Anthropic API is enabled
 let memoryCacheService: any = null;
@@ -24,6 +25,9 @@ try {
  */
 export async function createMcpServer(): Promise<McpServer> {
   try {
+    // Initialize the safe sync manager
+    const safeSyncManager = new SafeSyncManager();
+    
     // Initialize services
     await templateService.initialize();
     await platformService.initialize();
@@ -40,13 +44,23 @@ export async function createMcpServer(): Promise<McpServer> {
       {},
       async () => {
         try {
-          const template = await templateService.getTemplate();
-          const markdown = generateTemplate(template);
+          // Use the safe sync manager to read the master file
+          const masterContent = await safeSyncManager.readMasterFile();
+          
+          if (!masterContent) {
+            return {
+              content: [{ 
+                type: 'text', 
+                text: 'Master file is empty or not found' 
+              }],
+              isError: true
+            };
+          }
           
           return {
             content: [{ 
               type: 'text', 
-              text: markdown 
+              text: masterContent 
             }]
           };
         } catch (error) {
@@ -70,9 +84,10 @@ export async function createMcpServer(): Promise<McpServer> {
       },
       async ({ sectionName }) => {
         try {
-          const section = await templateService.getSection(sectionName);
+          // Use the safe sync manager to get the section
+          const sectionContent = await safeSyncManager.getSection(sectionName);
           
-          if (!section) {
+          if (!sectionContent) {
             return {
               content: [{ 
                 type: 'text', 
@@ -82,20 +97,10 @@ export async function createMcpServer(): Promise<McpServer> {
             };
           }
           
-          // Format section for display
-          let sectionText = `# ${section.title}\n`;
-          if (section.description) {
-            sectionText += `## ${section.description}\n`;
-          }
-          
-          for (const item of section.items) {
-            sectionText += `-~- ${item.key}: ${item.value}\n`;
-          }
-          
           return {
             content: [{ 
               type: 'text', 
-              text: sectionText 
+              text: sectionContent 
             }]
           };
         } catch (error) {
@@ -120,7 +125,8 @@ export async function createMcpServer(): Promise<McpServer> {
       },
       async ({ sectionName, content }) => {
         try {
-          const success = await templateService.updateSection(sectionName, content);
+          // Use the safe sync manager to update the section with backup
+          const success = await safeSyncManager.updateSection(sectionName, content);
           
           if (!success) {
             return {
@@ -132,15 +138,15 @@ export async function createMcpServer(): Promise<McpServer> {
             };
           }
           
-          // Sync with platforms
-          const results = await platformService.syncAll();
+          // Sync to platforms
+          const results = await safeSyncManager.syncToPlatforms();
           const successCount = results.filter(r => r.success).length;
           const platformCount = results.length;
           
           return {
             content: [{ 
               type: 'text', 
-              text: `Section '${sectionName}' updated successfully. Synced to ${successCount}/${platformCount} platforms.` 
+              text: `Section '${sectionName}' updated successfully with backup. Synced to ${successCount}/${platformCount} platforms.` 
             }]
           };
         } catch (error) {
@@ -164,28 +170,29 @@ export async function createMcpServer(): Promise<McpServer> {
       },
       async ({ content }) => {
         try {
-          const success = await templateService.updateTemplate(content);
+          // Use the safe sync manager to update the master file with backup
+          const success = await safeSyncManager.updateMasterFile(content);
           
           if (!success) {
             return {
               content: [{ 
                 type: 'text', 
-                text: 'Failed to update template' 
+                text: 'Failed to update master file' 
               }],
               isError: true
             };
           }
           
           try {
-            // Sync with platforms
-            const results = await platformService.syncAll();
+            // Sync to platforms
+            const results = await safeSyncManager.syncToPlatforms();
             const successCount = results.filter(r => r.success).length;
             const platformCount = results.length;
             
             return {
               content: [{ 
                 type: 'text', 
-                text: `Template updated successfully. Synced to ${successCount}/${platformCount} platforms.` 
+                text: `Master file updated successfully with backup. Synced to ${successCount}/${platformCount} platforms.` 
               }]
             };
           } catch (syncError) {
@@ -194,7 +201,7 @@ export async function createMcpServer(): Promise<McpServer> {
             return {
               content: [{ 
                 type: 'text', 
-                text: 'Template updated successfully but platform sync failed. You may need to run sync_platforms manually.' 
+                text: 'Master file updated successfully with backup, but platform sync failed. You may need to run sync_platforms manually.' 
               }]
             };
           }
@@ -203,126 +210,7 @@ export async function createMcpServer(): Promise<McpServer> {
           return {
             content: [{ 
               type: 'text', 
-              text: `Error updating template: ${error instanceof Error ? error.message : String(error)}` 
-            }],
-            isError: true
-          };
-        }
-      }
-    );
-    
-    // List presets tool
-    server.tool(
-      'list_presets',
-      {},
-      async () => {
-        try {
-          const presets = await templateService.listPresets();
-          
-          if (presets.length === 0) {
-            return {
-              content: [{ 
-                type: 'text', 
-                text: 'No presets found' 
-              }]
-            };
-          }
-          
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Available presets:\n${presets.join('\n')}` 
-            }]
-          };
-        } catch (error) {
-          console.error(`Error in list_presets: ${error instanceof Error ? error.message : String(error)}`);
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Error listing presets: ${error instanceof Error ? error.message : String(error)}` 
-            }],
-            isError: true
-          };
-        }
-      }
-    );
-    
-    // Load preset tool
-    server.tool(
-      'load_preset',
-      {
-        presetName: z.string().describe('The name of the preset to load')
-      },
-      async ({ presetName }) => {
-        try {
-          const success = await templateService.loadPreset(presetName);
-          
-          if (!success) {
-            return {
-              content: [{ 
-                type: 'text', 
-                text: `Failed to load preset '${presetName}'` 
-              }],
-              isError: true
-            };
-          }
-          
-          // Sync with platforms
-          const results = await platformService.syncAll();
-          const successCount = results.filter(r => r.success).length;
-          const platformCount = results.length;
-          
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Preset '${presetName}' loaded successfully. Synced to ${successCount}/${platformCount} platforms.` 
-            }]
-          };
-        } catch (error) {
-          console.error(`Error in load_preset: ${error instanceof Error ? error.message : String(error)}`);
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Error loading preset: ${error instanceof Error ? error.message : String(error)}` 
-            }],
-            isError: true
-          };
-        }
-      }
-    );
-    
-    // Create preset tool
-    server.tool(
-      'create_preset',
-      {
-        presetName: z.string().describe('The name for the new preset')
-      },
-      async ({ presetName }) => {
-        try {
-          const success = await templateService.createPreset(presetName);
-          
-          if (!success) {
-            return {
-              content: [{ 
-                type: 'text', 
-                text: `Failed to create preset '${presetName}'` 
-              }],
-              isError: true
-            };
-          }
-          
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Preset '${presetName}' created successfully` 
-            }]
-          };
-        } catch (error) {
-          console.error(`Error in create_preset: ${error instanceof Error ? error.message : String(error)}`);
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Error creating preset: ${error instanceof Error ? error.message : String(error)}` 
+              text: `Error updating master file: ${error instanceof Error ? error.message : String(error)}` 
             }],
             isError: true
           };
@@ -336,24 +224,39 @@ export async function createMcpServer(): Promise<McpServer> {
       {
         platform: z.string().optional().describe('Specific platform to sync (optional)')
       },
-      async (params) => {
+      async ({ platform }) => {
         try {
-          const platform = params.platform as PlatformType | undefined;
           let results;
           
           if (platform) {
-            const result = await platformService.syncPlatform(platform);
-            results = [result];
+            // Sync a specific platform
+            const validPlatform = platform as PlatformType;
+            return {
+              content: [{ 
+                type: 'text', 
+                text: 'Individual platform sync not supported in safe mode. Use sync_platforms with no arguments to sync all platforms.' 
+              }],
+              isError: true
+            };
           } else {
-            const template = await templateService.getTemplate();
-            const templateContent = generateTemplate(template);
-            results = await platformService.syncAll(templateContent);
+            // Sync all platforms using the safe sync manager
+            results = await safeSyncManager.syncToPlatforms();
+          }
+          
+          const successCount = results.filter(r => r.success).length;
+          const totalCount = results.length;
+          
+          // Detailed results
+          let detailedResults = '';
+          for (const result of results) {
+            const status = result.success ? '✅' : '❌';
+            detailedResults += `${status} ${result.platform}: ${result.message}\n`;
           }
           
           return {
             content: [{ 
               type: 'text', 
-              text: `Sync results: ${results.map(r => `${r.platform}: ${r.success ? '✅' : '❌'}`).join(', ')}` 
+              text: `Synced ${successCount}/${totalCount} platforms:\n\n${detailedResults}` 
             }]
           };
         } catch (error) {
@@ -374,33 +277,61 @@ export async function createMcpServer(): Promise<McpServer> {
       'list_platforms',
       {},
       async () => {
-        try {
-          const platforms = platformService.getPlatforms();
-          const availablePlatforms = platformService.getAvailablePlatforms();
-          
-          let platformText = 'Configured platforms:\n';
-          
-          for (const platform of availablePlatforms) {
-            const isEnabled = platforms.includes(platform);
-            platformText += `${platform}: ${isEnabled ? '✅ Enabled' : '❌ Disabled'}\n`;
-          }
-          
-          return {
-            content: [{ 
-              type: 'text', 
-              text: platformText
-            }]
-          };
-        } catch (error) {
-          console.error(`Error in list_platforms: ${error instanceof Error ? error.message : String(error)}`);
-          return {
-            content: [{ 
-              type: 'text', 
-              text: `Error listing platforms: ${error instanceof Error ? error.message : String(error)}` 
-            }],
-            isError: true
-          };
-        }
+        return {
+          content: [{ 
+            type: 'text', 
+            text: 'Available platforms:\n- windsurf: Windsurf IDE memories\n- claude-code: CLAUDE.md files in project directories' 
+          }]
+        };
+      }
+    );
+    
+    // List presets tool - limited functionality
+    server.tool(
+      'list_presets',
+      {},
+      async () => {
+        return {
+          content: [{ 
+            type: 'text', 
+            text: 'Preset functionality is not available in safe mode.' 
+          }],
+          isError: true
+        };
+      }
+    );
+    
+    // Load preset tool - limited functionality
+    server.tool(
+      'load_preset',
+      {
+        presetName: z.string().describe('The name of the preset to load')
+      },
+      async () => {
+        return {
+          content: [{ 
+            type: 'text', 
+            text: 'Preset functionality is not available in safe mode.' 
+          }],
+          isError: true
+        };
+      }
+    );
+    
+    // Create preset tool - limited functionality
+    server.tool(
+      'create_preset',
+      {
+        presetName: z.string().describe('The name for the new preset')
+      },
+      async () => {
+        return {
+          content: [{ 
+            type: 'text', 
+            text: 'Preset functionality is not available in safe mode.' 
+          }],
+          isError: true
+        };
       }
     );
     
@@ -423,7 +354,7 @@ export async function createMcpServer(): Promise<McpServer> {
             
             if (response.success) {
               // Format response from Claude
-              const text = response.content.map(c => c.text).join('');
+              const text = response.content.map((c: any) => c.text).join('');
               return {
                 content: [{ type: 'text', text }],
                 isError: false
@@ -457,10 +388,10 @@ export async function createMcpServer(): Promise<McpServer> {
       }
     );
     
-    console.error('[mcpServer] MCP server created and configured');
+    console.error('MCP server created with limited functionality for safety');
     return server;
   } catch (error) {
-    console.error(`[mcpServer:error] Error creating MCP server: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`Error creating MCP server: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
   }
 }
