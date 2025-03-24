@@ -36,17 +36,47 @@ npm install
 # Build TypeScript code
 npm run build
 
-# Start MCP server
-./start-memory-sync.sh
+# Start MCP server (with stdio transport)
+npm start
+
+# Or start with HTTP transport
+npm run start:http
+```
+
+### 🧠 Server Options
+
+The unified server script supports multiple options:
+
+```bash
+# Start with stdio transport (default)
+./start-server.sh
+
+# Start with HTTP transport
+./start-server.sh --http
+
+# Start with HTTP transport on custom port
+./start-server.sh --http --port=8080
+
+# Start with direct implementation (no SDK)
+./start-server.sh --direct
+
+# Start with direct implementation and HTTP transport
+./start-server.sh --direct --http
+
+# Enable debug mode
+./start-server.sh --debug
 ```
 
 ### 🔄 Direct Sync Method (Simple Alternative)
 
-For a simpler approach that doesn't require running an MCP server, you can use the standalone sync script:
+For a simpler approach that doesn't require running an MCP server, you can use the unified CLI:
 
 ```bash
 # One-time sync of all memory files
-node sync-memory.js
+npm run sync
+
+# Or for emergency sync (fixes permissions)
+npm run sync:emergency
 ```
 
 This script will:
@@ -81,7 +111,17 @@ npm install -g myai-memory-sync
 Start the server:
 
 ```bash
-myai-memory-sync
+# Start with stdio transport (default)
+myai
+
+# Start with HTTP transport
+myai server --transport http
+
+# Process memory commands
+myai remember "I prefer dark mode"
+
+# Sync across platforms
+myai sync
 ```
 
 ### Option 2: Run from Source
@@ -93,7 +133,9 @@ git clone https://github.com/Jktfe/myaimemory-mcp.git
 cd myaimemory-mcp
 npm install
 npm run build
-npm start
+npm start  # Start with stdio transport
+# or
+npm run start:http  # Start with HTTP transport
 ```
 
 ### Option 3: Docker
@@ -118,7 +160,7 @@ Add this to your `claude_desktop_config.json`:
       "command": "npx",
       "args": [
         "-y",
-        "myai-memory-sync"
+        "myai"
       ],
       "env": {
         "TEMPLATE_PATH": "/path/to/custom/template.md",
@@ -151,7 +193,7 @@ In Windsurf, add to your `.codeium/config.json`:
         "command": "npx",
         "args": [
           "-y",
-          "myai-memory-sync"
+          "myai"
         ]
       }
     }
@@ -164,10 +206,16 @@ In Windsurf, add to your `.codeium/config.json`:
 For HTTP transport instead of stdio:
 
 ```bash
-# Start HTTP server on port 3000
+# Using npm scripts:
 npm run start:http
 
-# Or specify a custom port
+# Using the unified CLI:
+myai server --transport http
+
+# Using the shell script with custom port:
+./start-server.sh --http --port=8080
+
+# Using environment variable:
 PORT=8080 npm run start:http
 ```
 
@@ -178,6 +226,8 @@ Create a `.env` file with the following options:
 # Basic configuration
 DEBUG=true                      # Enable debug logging
 TEMPLATE_PATH=./data/template.md  # Custom template location
+PORT=3000                       # Port for HTTP transport (default: 3000)
+USE_DIRECT=true                 # Use direct implementation (no SDK)
 
 # Platform-specific paths
 WINDSURF_MEMORY_PATH=~/.codeium/windsurf/memories/global_rules.md

@@ -4,7 +4,7 @@ export default {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^(\\.{1,2}/.*)(\\.js)?$': '$1',
   },
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', {
@@ -30,6 +30,19 @@ export default {
     "!src/setupConfig.ts",
   ],
   testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
-  setupFilesAfterEnv: [],
+  testPathIgnorePatterns: [
+    "node_modules/",
+    "dist/",
+    "__mocks__/",
+    "\\.d\\.ts$"
+  ],
+  setupFilesAfterEnv: ["./__tests__/jest.setup.ts"],
   injectGlobals: true,
+  globals: {
+    "ts-jest": {
+      diagnostics: {
+        ignoreCodes: [2339, 2345, 2349] // Ignore property does not exist, etc.
+      }
+    }
+  }
 }

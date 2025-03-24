@@ -33,6 +33,10 @@ const defaultConfig = {
       cachePath: path.join(os.homedir(), '.cache', 'myai-memory-sync', 'prompt-cache')
     }
   },
+  // Service implementation configuration
+  services: {
+    implementationType: process.env.IMPLEMENTATION_TYPE || 'custom', // 'legacy' or 'custom'
+  },
   // File paths
   paths: {
     masterTemplate: path.join(__dirname, '..', 'myAI Master.md'),
@@ -76,6 +80,10 @@ export const config = {
       ...((loadedConfig as any).anthropic || {}).cache
     }
   },
+  services: {
+    ...defaultConfig.services,
+    ...(loadedConfig as any).services
+  },
   paths: {
     ...defaultConfig.paths,
     ...(loadedConfig as any).paths
@@ -89,6 +97,10 @@ if (process.env.MY_EMAIL) {
 
 if (process.env.ANTHROPIC_API_KEY) {
   config.anthropic.apiKey = process.env.ANTHROPIC_API_KEY;
+}
+
+if (process.env.IMPLEMENTATION_TYPE) {
+  config.services.implementationType = process.env.IMPLEMENTATION_TYPE;
 }
 
 // Create a sample config file if it doesn't exist
@@ -114,6 +126,9 @@ if (!fs.existsSync(CONFIG_FILE)) {
               ttl: 3600000, // 1 hour
               cachePath: "~/.cache/myai-memory-sync/prompt-cache"
             }
+          },
+          services: {
+            implementationType: "custom" // 'legacy' or 'custom'
           },
           paths: {
             masterTemplate: './myAI Master.md',
